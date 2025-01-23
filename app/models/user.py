@@ -14,6 +14,12 @@ class User:
     @staticmethod
     def verify_login(usuario, contrasena):
         usuario_obj = get_usuario_by_usuario(usuario)
-        if usuario_obj and verify_password(usuario_obj['contrasena'], contrasena):
-            return usuario_obj
-        return None
+        # Verifica si el usuario no existe
+        if not usuario_obj:
+            raise ValueError('Usuario no encontrado')
+
+        # Verifica si la contraseña es incorrecta
+        if not verify_password(usuario_obj['contrasena'], contrasena):
+            raise ValueError('Contraseña incorrecta')
+
+        return usuario_obj  # Si el usuario y la contraseña son correctos, retorna el usuario

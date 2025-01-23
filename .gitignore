@@ -1,0 +1,13 @@
+# Entornos virtuales
+venv/
+env/
+
+# Archivos compilados de Python
+*.pyc
+
+# Archivos de log
+*.log
+
+# Archivos de configuración del sistema
+.DS_Store
+Thumbs.db

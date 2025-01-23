@@ -4,7 +4,8 @@ from ..models.book import Book
 class BookController:
     @staticmethod
     def get_books():
-        books = Book.get_all_books()
+        query = request.args.get('query')  # Obtiene el parámetro 'query' de la URL
+        books = Book.get_all_books(query)
         return jsonify(books), 200
 
     @staticmethod
@@ -22,6 +23,16 @@ class BookController:
         if not all(key in data for key in ['titulo', 'isbn', 'autor', 'editorial', 'anio_publicacion', 'cantidad_ejemplares', 'id_categoria']):
             return jsonify({'message': 'Faltan datos requeridos'}), 400
 
-        Book.add_book(data)       
-        return jsonify({'message': 'Libro agregado exitosamente!'}), 201
-        
+        book_id = Book.add_book_with_tags(data)
+          
+        return jsonify({'message': 'Libro agregado exitosamente!', 'book_id': book_id}), 201
+    
+    @staticmethod
+    def get_categories(query):
+        categorias = Book.get_all_categories()
+        return jsonify(categorias)
+    
+    @staticmethod
+    def get_tags(query):
+        tags = Book.get_all_tags()
+        return jsonify(tags)

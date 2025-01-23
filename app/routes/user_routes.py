@@ -17,13 +17,14 @@ def register_bibliotecario():
 
 @user_routes.route('/api/login', methods=['POST'])
 def login_usuario():
-    data = request.json
+    return UserController.login()
+""" data = request.json
     user = UserController.login(data['usuario'], data['contrasena'])
     if user:
         session['usuario'] = user['usuario']
         session['tipo_usuario'] = 'lector' if 'matricula' in user else 'bibliotecario'
         return jsonify({'message': 'Sesión iniciada exitosamente'}), 200
-    return jsonify({'message': 'Usuario o contraseña incorrectos'}), 401
+    return jsonify({'message': 'Usuario o contraseña incorrectos'}), 401"""
 
 @user_routes.route('/api/logout', methods=['POST'])
 def logout_usuario():

@@ -59,15 +59,26 @@ def verify_password(hashed_contrasena, contrasena):
     return bcrypt.check_password_hash(hashed_contrasena, contrasena)
 
 # Funciones para obtener libros, categorías, y etiquetas
-def get_all_books():
+def get_all_books(query=None):
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
-    cursor.execute('''
-        SELECT libros.id_libro, libros.titulo, libros.isbn, libros.autor, libros.editorial, 
-               libros.anio_publicacion, libros.cantidad_ejemplares, categorias.nombre_categoria
-        FROM libros
-        JOIN categorias ON libros.id_categoria = categorias.id_categoria;
-    ''')
+    if query:
+        # Buscar coincidencias con el parámetro query en el título, autor o editorial
+        cursor.execute('''
+            SELECT libros.id_libro, libros.titulo, libros.isbn, libros.autor, libros.editorial, 
+                   libros.anio_publicacion, libros.cantidad_ejemplares, categorias.nombre_categoria
+            FROM libros
+            JOIN categorias ON libros.id_categoria = categorias.id_categoria
+            WHERE libros.titulo LIKE %s OR libros.autor LIKE %s OR libros.editorial LIKE %s;
+        ''', (f'%{query}%', f'%{query}%', f'%{query}%'))
+    else:
+        # Si no hay 'query', traemos todos los libros
+        cursor.execute('''
+            SELECT libros.id_libro, libros.titulo, libros.isbn, libros.autor, libros.editorial, 
+                   libros.anio_publicacion, libros.cantidad_ejemplares, categorias.nombre_categoria
+            FROM libros
+            JOIN categorias ON libros.id_categoria = categorias.id_categoria;
+        ''')
     books = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -88,7 +99,7 @@ def get_book_by_id(book_id):
     connection.close()
     return book
 
-def add_book(titulo, isbn, autor, editorial, anio_publicacion, cantidad_ejemplares, id_categoria):
+def add_book(titulo, isbn, autor, editorial, anio_publicacion, cantidad_ejemplares, id_categoria, id_etiquetas= None):
     connection = get_db_connection()
     cursor = connection.cursor()
     cursor.execute('''
@@ -96,8 +107,19 @@ def add_book(titulo, isbn, autor, editorial, anio_publicacion, cantidad_ejemplar
         VALUES (%s, %s, %s, %s, %s, %s,%s, %s)
     ''', (titulo, isbn, autor, editorial, anio_publicacion, cantidad_ejemplares, cantidad_ejemplares, id_categoria))
     connection.commit()
+    
+    book_id = cursor.lastrowid #Obtiene el ID del libro insertado
+    
+    if id_etiquetas:
+        for etiqueta_id in id_etiquetas:
+            cursor.execute('''
+                INSERT INTO libro_etiqueta (id_libro, id_etiqueta)
+                VALUES (%s, %s)
+            ''', (book_id, etiqueta_id))
+        connection.commit()
     cursor.close()
     connection.close()
+    return book_id 
 """def add_book(titulo, isbn, autor, editorial, anio_publicacion, cantidad_ejemplares, id_categoria):
     connection = get_db_connection()
     cursor = connection.cursor()
